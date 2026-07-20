@@ -21,10 +21,23 @@ from .const import (
     DOMAIN,
 )
 
+
+def _parse_number(value) -> int:
+    """Accept decimal integers or 0x-prefixed hex strings and return int."""
+    if isinstance(value, int):
+        return value
+    try:
+        return int(str(value).strip(), 0)
+    except ValueError:
+        raise vol.Invalid(
+            "Enter a decimal number (e.g. 10) or hex with 0x prefix (e.g. 0x43)"
+        )
+
+
 STEP_USER_SCHEMA = vol.Schema({
     vol.Required(CONF_NAME, default=DEFAULT_NAME): str,
-    vol.Required(CONF_BUS, default=1): int,
-    vol.Required(CONF_ADDR, default=64): int,
+    vol.Required(CONF_BUS, default="1"): vol.All(str, _parse_number),
+    vol.Required(CONF_ADDR, default="0x40"): vol.All(str, _parse_number),
     vol.Required(CONF_BATTERIES_COUNT, default=3): int,
     vol.Required(CONF_BATTERY_CAPACITY, default=3000): int,
     vol.Optional(CONF_SCAN_INTERVAL, default=60): int,

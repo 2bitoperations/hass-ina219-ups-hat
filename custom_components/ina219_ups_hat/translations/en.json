@@ -3,11 +3,11 @@
     "step": {
       "user": {
         "title": "INA219 UPS Hat",
-        "description": "Configure your INA219-based UPS. The I2C address should be in decimal (e.g. 64 for 0x40, 67 for 0x43).",
+        "description": "Configure your INA219-based UPS. Bus and address accept decimal (e.g. 10, 67) or hex with 0x prefix (e.g. 0x0a, 0x43).",
         "data": {
           "name": "Device name",
-          "bus": "I2C bus number",
-          "addr": "I2C address (decimal)",
+          "bus": "I2C bus number (decimal or 0x hex)",
+          "addr": "I2C address (decimal or 0x hex)",
           "batteries_count": "Battery cells in series (1S, 2S, 3S…)",
           "battery_capacity": "Capacity per cell (mAh)",
           "scan_interval": "Scan interval (seconds)",
