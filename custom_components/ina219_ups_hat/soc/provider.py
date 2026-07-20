@@ -1,10 +1,8 @@
-from homeassistant import core
+"""State-of-charge lookup via open-circuit voltage linear interpolation."""
 
 
 class SocOcvProvider:
-    def __init__(self, hass: core.HomeAssistant, ocv_map) -> None:
-        self._hass = hass
-        # Sort by voltage ascending for interpolation
+    def __init__(self, ocv_map: dict) -> None:
         pairs = sorted(ocv_map.items(), key=lambda x: x[1])
         self._soc_vals = [p[0] for p in pairs]
         self._voltage_vals = [p[1] for p in pairs]

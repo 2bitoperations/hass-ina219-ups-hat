@@ -96,19 +96,23 @@ class INA219UpsHatConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return INA219UpsHatOptionsFlow(config_entry)
+        return INA219UpsHatOptionsFlow()
 
 
 class INA219UpsHatOptionsFlow(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        self._entry = config_entry
-
     async def async_step_init(self, user_input=None):
         if user_input is not None:
+            new_name = user_input.get(CONF_NAME, self.config_entry.title)
+            self.hass.config_entries.async_update_entry(
+                self.config_entry,
+                title=new_name,
+                data={**self.config_entry.data, CONF_NAME: new_name},
+            )
             return self.async_create_entry(data=user_input)
 
-        merged = {**self._entry.data, **self._entry.options}
+        merged = {**self.config_entry.data, **self.config_entry.options}
         schema = vol.Schema({
+            vol.Optional(CONF_NAME, default=merged.get(CONF_NAME, DEFAULT_NAME)): str,
             vol.Optional(CONF_BATTERIES_COUNT, default=merged.get(CONF_BATTERIES_COUNT, 3)): int,
             vol.Optional(CONF_BATTERY_CAPACITY, default=merged.get(CONF_BATTERY_CAPACITY, 3000)): int,
             vol.Optional(CONF_SCAN_INTERVAL, default=merged.get(CONF_SCAN_INTERVAL, 60)): int,

@@ -1,16 +1,36 @@
-name: Release
+name: CI
 
 on:
   push:
-    branches: [master]
+    branches: ["master"]
+  pull_request:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
+  validate-hacs:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - name: HACS validation
+        uses: "hacs/action@v1.6.0"
+        with:
+          category: "integration"
+
+  validate-hassfest:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "home-assistant/actions/hassfest@master"
+
   release:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[skip release]')"
+    needs: [validate-hacs, validate-hassfest]
+    if: "github.event_name == 'push' && github.ref == 'refs/heads/master' && !contains(github.event.head_commit.message, '[skip release]')"
     steps:
       - uses: actions/checkout@v4
         with:

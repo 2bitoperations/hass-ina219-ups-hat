@@ -180,23 +180,25 @@ class INA219(INA219Interface):
         self.write(_REG_CALIBRATION, self._cal_value)
         value = self.read(_REG_SHUNTVOLTAGE)
         if value > 32767:
-            value -= 65535
+            value -= 65536
         return value * 0.01
 
     def getBusVoltage_V(self):
         self.write(_REG_CALIBRATION, self._cal_value)
-        self.read(_REG_BUSVOLTAGE)
         return (self.read(_REG_BUSVOLTAGE) >> 3) * 0.004
 
     def getCurrent_mA(self):
         value = self.read(_REG_CURRENT)
         if value > 32767:
-            value -= 65535
+            value -= 65536
         return value * self._current_lsb
 
     def getPower_W(self):
         self.write(_REG_CALIBRATION, self._cal_value)
         value = self.read(_REG_POWER)
         if value > 32767:
-            value -= 65535
+            value -= 65536
         return value * self._power_lsb
+
+    def close(self) -> None:
+        self.bus.close()

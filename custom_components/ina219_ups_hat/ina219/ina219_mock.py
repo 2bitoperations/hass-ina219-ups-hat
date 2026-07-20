@@ -1,32 +1,26 @@
+import logging
 import random
 
 from .ina219_interface import INA219Interface
 
+_LOGGER = logging.getLogger(__name__)
+
 
 class MockINA219(INA219Interface):
     def __init__(self, i2c_bus=1, addr=0x40):
-        print("Mocked ina219 started for bus=%2d, addr=%2d" % (i2c_bus, addr))
+        _LOGGER.debug("MockINA219 started for bus=%d, addr=%d", i2c_bus, addr)
 
     def getShuntVoltage_mV(self):
-        value = random.randint(20, 200)
-        return value
-        value = random.randint(20, 200)
-        return value
+        return random.randint(20, 200)
 
     def getBusVoltage_V(self):
-        value = random.randint(900, 1243)
-        return value * 0.01
-        value = random.randint(900, 1243)
-        return value * 0.01
+        return random.randint(900, 1243) * 0.01
 
     def getCurrent_mA(self):
-        value = random.randint(-500, 1500)
-        return value
-        value = random.randint(-500, 1500)
-        return value
+        return random.randint(-500, 1500)
 
     def getPower_W(self):
-        value = random.randint(-4, 15)
-        return value
-        value = random.randint(-4, 15)
-        return value
+        return random.randint(-4, 15)
+
+    def close(self) -> None:
+        pass

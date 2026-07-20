@@ -1,10 +1,16 @@
+# Example automations for INA219 UPS Hat.
+# Entity IDs follow the pattern: <domain>.<device_name>_<suffix>
+# where <device_name> is the name you gave the integration (lowercased, spaces→underscores).
+# Example: device name "INA219 UPS" → binary_sensor.ina219_ups_online, sensor.ina219_ups_battery
+# Replace "ina219_ups" below with your actual device name slug.
+
 - id: ina219_ups_hat_on_power_loss
-  alias: '[Hassio UPS] On Power Loss/Restored'
+  alias: '[UPS] On Power Loss/Restored'
   description: Send notification on power loss
   trigger:
   - platform: state
     entity_id:
-    - binary_sensor.hassio_ups_online
+    - binary_sensor.ina219_ups_online
     from: 'on'
     to: 'off'
     for:
@@ -13,7 +19,7 @@
       seconds: 5
   - platform: state
     entity_id:
-    - binary_sensor.hassio_ups_online
+    - binary_sensor.ina219_ups_online
     from: 'off'
     to: 'on'
     for:
@@ -23,25 +29,26 @@
   action:
   - if:
     - condition: state
-      entity_id: binary_sensor.hassio_ups_online
+      entity_id: binary_sensor.ina219_ups_online
       state: 'off'
     then:
     - service: notify.notify
       data:
         message: Power outage detected
-        title: "\U0001F50C *Hassio UPS*"
+        title: "\U0001F50C *UPS*"
     else:
     - service: notify.notify
       data:
         message: Power restored
-        title: "\U0001F50C *Hassio UPS*"
+        title: "\U0001F50C *UPS*"
   mode: single
+
 - id: ina219_ups_hat_on_charge_critical
-  alias: '[Hassio UPS] On Charge Critical'
+  alias: '[UPS] On Charge Critical'
   description: Send notification & gracefully shutdown host
   trigger:
   - platform: numeric_state
-    entity_id: sensor.hassio_ups_soc
+    entity_id: sensor.ina219_ups_battery
     for:
       hours: 0
       minutes: 0
@@ -51,7 +58,7 @@
   - service: notify.notify
     data:
       message: Battery critical. Shutting down.
-      title: "\U0001FAAB *Hassio UPS*"
+      title: "\U0001FAAB *UPS*"
   - event: set_shutdown_reason
     event_data:
       reason: ups_charge_critical
