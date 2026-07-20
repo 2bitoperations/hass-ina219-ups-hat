@@ -2,11 +2,23 @@
 
 from collections import deque
 
-import numpy as np
-
 from .ina219.ina219_interface import INA219Interface
 
 COEF_SMAx2 = 2
+
+
+def _mean(values):
+    lst = list(values)
+    return sum(lst) / len(lst) if lst else 0.0
+
+
+def _median(values):
+    lst = sorted(values)
+    n = len(lst)
+    if n == 0:
+        return 0.0
+    mid = n // 2
+    return lst[mid] if n % 2 else (lst[mid - 1] + lst[mid]) / 2.0
 
 
 class INA219Wrapper:
@@ -16,7 +28,6 @@ class INA219Wrapper:
         self._shunt_voltage_buf = deque(maxlen=samples_cnt)
         self._current_buf = deque(maxlen=samples_cnt * COEF_SMAx2)
         self._power_buf = deque(maxlen=samples_cnt)
-        self._attrs = {}
 
     def measureINAValues(self):
         self._current_buf.append(self._ina219.getCurrent_mA())
@@ -25,39 +36,33 @@ class INA219Wrapper:
         self._power_buf.append(self._ina219.getPower_W())
 
     def getCurrentSMA_mA(self):
-        return self._getSMAValue(self._current_buf)
+        return _mean(self._current_buf)
 
     def getBusVoltageSMA_V(self):
-        return self._getSMAValue(self._bus_voltage_buf)
+        return _mean(self._bus_voltage_buf)
 
     def getShuntVoltageSMA_mV(self):
-        return self._getSMAValue(self._shunt_voltage_buf)
+        return _mean(self._shunt_voltage_buf)
 
     def getPowerSMA_W(self):
-        return self._getSMAValue(self._power_buf)
+        return _mean(self._power_buf)
 
     def getCurrentSMAx2_mA(self):
-        return self._getSMAValue(self._current_buf, COEF_SMAx2)
+        return _mean(self._getBufTail(self._current_buf, COEF_SMAx2))
 
     def getBusVoltageSMAx2_V(self):
-        return self._getSMAValue(self._bus_voltage_buf, COEF_SMAx2)
+        return _mean(self._getBufTail(self._bus_voltage_buf, COEF_SMAx2))
 
     def isBusVoltageBufFilled(self):
-        if len(self._bus_voltage_buf) == self._bus_voltage_buf.maxlen:
-            return True
-        return False
+        return len(self._bus_voltage_buf) == self._bus_voltage_buf.maxlen
 
     def _getSMAValue(self, buf: deque, divider: int = 1):
-        if divider > 1:
-            return np.mean(self._getBufTail(buf, divider))
-        return np.mean(buf)
+        return _mean(self._getBufTail(buf, divider) if divider > 1 else buf)
 
     def _getSMMValue(self, buf: deque, divider: int = 1):
-        if divider > 1:
-            return np.median(self._getBufTail(buf, divider))
-        return np.median(buf)
+        return _median(self._getBufTail(buf, divider) if divider > 1 else buf)
 
     def _getBufTail(self, buf: deque, divider: int):
-        slice_start = len(buf) - int(len(buf) / divider) - 1
-        slice_end = len(buf)
-        return list(buf)[slice_start:slice_end]
+        lst = list(buf)
+        slice_start = len(lst) - int(len(lst) / divider) - 1
+        return lst[slice_start:]

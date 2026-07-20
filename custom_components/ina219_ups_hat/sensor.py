@@ -1,10 +1,9 @@
 """INA219 UPS Hat sensors."""
 
-import logging
+from __future__ import annotations
 
-from homeassistant import core
-from homeassistant.components.sensor import SensorEntity
-from homeassistant.components.sensor.const import SensorDeviceClass, SensorStateClass
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     PERCENTAGE,
     UnitOfElectricCurrent,
@@ -13,117 +12,99 @@ from homeassistant.const import (
     UnitOfPower,
     UnitOfTime,
 )
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
+from .const import DOMAIN
 from .coordinator import INA219UpsHatCoordinator
 from .entity import INA219UpsHatEntity
 
-_LOGGER = logging.getLogger(__name__)
 
-
-async def async_setup_platform(
-    hass: core.HomeAssistant,
-    config: ConfigType,
+async def async_setup_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-    discovery_info: DiscoveryInfoType | None = None,
 ) -> None:
-    # We only want this platform to be set up via discovery.
-    if discovery_info is None:
-        return
-
-    coordinator = discovery_info.get("coordinator")
-
-    sensors = [
+    coordinator: INA219UpsHatCoordinator = hass.data[DOMAIN][entry.entry_id]
+    async_add_entities([
         VoltageSensor(coordinator),
         CurrentSensor(coordinator),
         PowerSensor(coordinator),
         SocSensor(coordinator),
         RemainingCapacitySensor(coordinator),
         RemainingTimeSensor(coordinator),
-    ]
-    async_add_entities(sensors)
+    ])
 
 
 class INA219UpsHatSensor(INA219UpsHatEntity, SensorEntity):
-    """Base sensor."""
-
-    def __init__(self, coordinator: INA219UpsHatCoordinator) -> None:
-        super().__init__(coordinator)
-        self._attr_suggested_display_precision = 2
+    _attr_suggested_display_precision = 2
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
 
 class VoltageSensor(INA219UpsHatSensor):
-    def __init__(self, coordinator) -> None:
-        super().__init__(coordinator)
-        self._name = "Voltage"
-        self._attr_native_unit_of_measurement = UnitOfElectricPotential.VOLT
-        self._attr_device_class = SensorDeviceClass.VOLTAGE
+    _key = "voltage"
+    _attr_name = "Voltage"
+    _attr_native_unit_of_measurement = UnitOfElectricPotential.VOLT
+    _attr_device_class = SensorDeviceClass.VOLTAGE
 
     @property
     def native_value(self):
-        return self._coordinator.data["voltage"]
+        return self.coordinator.data["voltage"]
 
 
 class CurrentSensor(INA219UpsHatSensor):
-    def __init__(self, coordinator) -> None:
-        super().__init__(coordinator)
-        self._name = "Current"
-        self._attr_native_unit_of_measurement = UnitOfElectricCurrent.AMPERE
-        self._attr_device_class = SensorDeviceClass.CURRENT
+    _key = "current"
+    _attr_name = "Current"
+    _attr_native_unit_of_measurement = UnitOfElectricCurrent.AMPERE
+    _attr_device_class = SensorDeviceClass.CURRENT
 
     @property
     def native_value(self):
-        return self._coordinator.data["current"]
+        return self.coordinator.data["current"]
 
 
 class PowerSensor(INA219UpsHatSensor):
-    def __init__(self, coordinator) -> None:
-        super().__init__(coordinator)
-        self._name = "Power"
-        self._attr_native_unit_of_measurement = UnitOfPower.WATT
-        self._attr_device_class = SensorDeviceClass.POWER
+    _key = "power"
+    _attr_name = "Power"
+    _attr_native_unit_of_measurement = UnitOfPower.WATT
+    _attr_device_class = SensorDeviceClass.POWER
 
     @property
     def native_value(self):
-        return self._coordinator.data["power"]
+        return self.coordinator.data["power"]
 
 
 class SocSensor(INA219UpsHatSensor):
-    def __init__(self, coordinator) -> None:
-        super().__init__(coordinator)
-        self._name = "SoC"
-        self._attr_native_unit_of_measurement = PERCENTAGE
-        self._attr_device_class = SensorDeviceClass.BATTERY
-        self._attr_suggested_display_precision = 1
+    _key = "soc"
+    _attr_name = "Battery"
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_device_class = SensorDeviceClass.BATTERY
+    _attr_suggested_display_precision = 1
 
     @property
     def native_value(self):
-        return self._coordinator.data["soc"]
+        return self.coordinator.data["soc"]
 
 
 class RemainingCapacitySensor(INA219UpsHatSensor):
-    def __init__(self, coordinator) -> None:
-        super().__init__(coordinator)
-        self._name = "Remaining Capacity"
-        self._attr_native_unit_of_measurement = UnitOfEnergy.WATT_HOUR
-        self._attr_device_class = SensorDeviceClass.ENERGY_STORAGE
-        self._attr_suggested_display_precision = 0
+    _key = "remaining_capacity"
+    _attr_name = "Remaining Capacity"
+    _attr_native_unit_of_measurement = UnitOfEnergy.WATT_HOUR
+    _attr_device_class = SensorDeviceClass.ENERGY_STORAGE
+    _attr_suggested_display_precision = 0
 
     @property
     def native_value(self):
-        return self._coordinator.data["remaining_battery_capacity"]
+        return self.coordinator.data["remaining_battery_capacity"]
 
 
 class RemainingTimeSensor(INA219UpsHatSensor):
-    def __init__(self, coordinator) -> None:
-        super().__init__(coordinator)
-        self._name = "Remaining Time"
-        self._attr_native_unit_of_measurement = UnitOfTime.HOURS
-        self._attr_device_class = SensorDeviceClass.DURATION
-        self._attr_state_class = SensorStateClass.TOTAL_INCREASING
-        self._attr_suggested_display_precision = 0
+    _key = "remaining_time"
+    _attr_name = "Remaining Time"
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
+    _attr_device_class = SensorDeviceClass.DURATION
+    _attr_suggested_display_precision = 1
 
     @property
     def native_value(self):
-        return self._coordinator.data["remaining_time"]
+        return self.coordinator.data["remaining_time"]

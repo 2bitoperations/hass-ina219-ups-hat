@@ -1,43 +1,22 @@
-import numpy as np
-import pandas as pd
-
 from homeassistant import core
 
 
 class SocOcvProvider:
     def __init__(self, hass: core.HomeAssistant, ocv_map) -> None:
-        """Initialize SocOcvProvider."""
-
         self._hass = hass
-        soc_voltage_data = ocv_map
-
-        soc_voltage_df = pd.DataFrame(
-            list(soc_voltage_data.items()), columns=["SOC", "Voltage"]
-        )
-
-        # Create the cubic interpolation function
-        coefficients = np.polyfit(soc_voltage_df["SOC"], soc_voltage_df["Voltage"], 3)
-        cubic_interp_func = np.poly1d(coefficients)
-        # Precalculate detailed SOC-Voltage data
-        detailed_soc = np.linspace(0, 100, 100)
-        detailed_voltage = cubic_interp_func(detailed_soc)
-        # Create a new DataFrame for the detailed SOC-Voltage data
-        self._detailed_soc_voltage_df = pd.DataFrame(
-            {"SOC": detailed_soc, "Voltage": detailed_voltage}
-        )
+        # Sort by voltage ascending for interpolation
+        pairs = sorted(ocv_map.items(), key=lambda x: x[1])
+        self._soc_vals = [p[0] for p in pairs]
+        self._voltage_vals = [p[1] for p in pairs]
 
     def get_soc_from_voltage(self, cell_voltage: float) -> float:
-        # Ensure the voltage is within the measurable range
-        if cell_voltage >= self._detailed_soc_voltage_df["Voltage"].max():
-            return 100
-        if cell_voltage <= self._detailed_soc_voltage_df["Voltage"].min():
-            return 0
-
-        # Interpolate the SOC based on the voltage
-        return float(
-            np.interp(
-                cell_voltage,
-                self._detailed_soc_voltage_df["Voltage"],
-                self._detailed_soc_voltage_df["SOC"],
-            )
-        )
+        if cell_voltage >= self._voltage_vals[-1]:
+            return 100.0
+        if cell_voltage <= self._voltage_vals[0]:
+            return 0.0
+        for i in range(len(self._voltage_vals) - 1):
+            v0, v1 = self._voltage_vals[i], self._voltage_vals[i + 1]
+            if v0 <= cell_voltage <= v1:
+                t = (cell_voltage - v0) / (v1 - v0)
+                return self._soc_vals[i] + t * (self._soc_vals[i + 1] - self._soc_vals[i])
+        return 0.0

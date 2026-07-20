@@ -1,30 +1,27 @@
-"""INA219 UPS Hat entity."""
+"""INA219 UPS Hat entity base."""
 
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import INA219UpsHatCoordinator
 
 
-class INA219UpsHatEntity:
-    """INA219 UPS Hat entity."""
+class INA219UpsHatEntity(CoordinatorEntity[INA219UpsHatCoordinator]):
+    """Base entity: one device per config entry, entities named relative to it."""
+
+    _attr_has_entity_name = True
+    _key: str  # subclasses must define this — used as unique_id suffix
 
     def __init__(self, coordinator: INA219UpsHatCoordinator) -> None:
-        self._coordinator = coordinator
-        self._device_id = self._coordinator.id_prefix
+        super().__init__(coordinator)
         self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, coordinator.id_prefix)},
+            identifiers={(DOMAIN, coordinator.entry.entry_id)},
             name=coordinator.name_prefix,
-            manufacturer="Some Chinese factory",
+            manufacturer="Waveshare",
+            model="INA219 UPS Hat",
         )
 
     @property
-    def name(self):
-        return self._coordinator.name_prefix + " " + self._name
-
-    @property
-    def unique_id(self):
-        return self._coordinator.id_prefix + "_" + self._name
-
-    async def async_update(self):
-        await self._coordinator.async_request_refresh()
+    def unique_id(self) -> str:
+        return f"{self.coordinator.entry.entry_id}_{self._key}"

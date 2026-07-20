@@ -1,0 +1,43 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "INA219 UPS Hat",
+        "description": "Configure your INA219-based UPS. The I2C address should be in decimal (e.g. 64 for 0x40, 67 for 0x43).",
+        "data": {
+          "name": "Device name",
+          "bus": "I2C bus number",
+          "addr": "I2C address (decimal)",
+          "batteries_count": "Battery cells in series (1S, 2S, 3S…)",
+          "battery_capacity": "Capacity per cell (mAh)",
+          "scan_interval": "Scan interval (seconds)",
+          "min_online_current": "Online threshold current (mA, negative = discharge)",
+          "min_charging_current": "Charging threshold current (mA)",
+          "max_soc": "Maximum SoC (%)",
+          "sma_samples": "SMA sample count"
+        }
+      }
+    },
+    "error": {
+      "bus_not_found": "I2C bus not found. Check the bus number and that I2C is enabled.",
+      "device_not_found": "INA219 not found at that address. Check wiring and address.",
+      "cannot_connect": "Could not connect to INA219."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "INA219 UPS Hat Options",
+        "data": {
+          "batteries_count": "Battery cells in series (1S, 2S, 3S…)",
+          "battery_capacity": "Capacity per cell (mAh)",
+          "scan_interval": "Scan interval (seconds)",
+          "min_online_current": "Online threshold current (mA, negative = discharge)",
+          "min_charging_current": "Charging threshold current (mA)",
+          "max_soc": "Maximum SoC (%)",
+          "sma_samples": "SMA sample count"
+        }
+      }
+    }
+  }
+}
