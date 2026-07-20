@@ -15,5 +15,5 @@
   "requirements": [
     "smbus2>=0.6.0"
   ],
-  "version": "1.0.2"
+  "version": "1.0.3"
 }
