@@ -36,8 +36,8 @@ def _parse_number(value) -> int:
 
 STEP_USER_SCHEMA = vol.Schema({
     vol.Required(CONF_NAME, default=DEFAULT_NAME): str,
-    vol.Required(CONF_BUS, default="1"): vol.All(str, _parse_number),
-    vol.Required(CONF_ADDR, default="0x40"): vol.All(str, _parse_number),
+    vol.Required(CONF_BUS, default="1"): str,
+    vol.Required(CONF_ADDR, default="0x40"): str,
     vol.Required(CONF_BATTERIES_COUNT, default=3): int,
     vol.Required(CONF_BATTERY_CAPACITY, default=3000): int,
     vol.Optional(CONF_SCAN_INTERVAL, default=60): int,
@@ -71,16 +71,35 @@ class INA219UpsHatConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         if user_input is not None:
+            try:
+                bus = _parse_number(user_input[CONF_BUS])
+            except vol.Invalid:
+                errors[CONF_BUS] = "invalid_number"
+
+            try:
+                addr = _parse_number(user_input[CONF_ADDR])
+            except vol.Invalid:
+                errors[CONF_ADDR] = "invalid_number"
+
+            if errors:
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=STEP_USER_SCHEMA,
+                    errors=errors,
+                )
+
             error = await self.hass.async_add_executor_job(
                 _validate_connection,
-                user_input[CONF_BUS],
-                user_input[CONF_ADDR],
+                bus,
+                addr,
             )
             if error:
                 errors["base"] = error
             else:
+                user_input[CONF_BUS] = bus
+                user_input[CONF_ADDR] = addr
                 await self.async_set_unique_id(
-                    f"{user_input[CONF_BUS]}_{user_input[CONF_ADDR]}"
+                    f"{bus}_{addr}"
                 )
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(

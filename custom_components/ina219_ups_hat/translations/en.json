@@ -21,7 +21,8 @@
     "error": {
       "bus_not_found": "I2C bus not found. Check the bus number and that I2C is enabled.",
       "device_not_found": "INA219 not found at that address. Check wiring and address.",
-      "cannot_connect": "Could not connect to INA219."
+      "cannot_connect": "Could not connect to INA219.",
+      "invalid_number": "Enter a decimal number (e.g. 10) or hex with 0x prefix (e.g. 0x43)."
     }
   },
   "options": {
