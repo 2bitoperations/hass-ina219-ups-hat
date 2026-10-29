@@ -59,7 +59,17 @@ ina219_ups_hat:
   sma_samples: 5            # Optional, default=5
   min_online_current: -100  # Optional, mA, default=-100
   min_charging_current: 55  # Optional, mA, default=55
+  invert_current: false     # Optional, default=false
 ```
+
+#### Invert Current
+
+The integration expects positive current while charging and negative while discharging. On some HATs
+the shunt is wired the other way round, so charging reads negative. Then HA shows the UPS as offline
+while it charges, and as charging/online while it runs down. To check: watch the battery voltage while the
+reported current is clearly non-zero. If the voltage rises while the current is negative, turn on
+`invert_current` (Options in the UI). Only the current (and the online/charging/remaining-time values
+derived from it) is flipped.
 
 #### Batteries Count
 

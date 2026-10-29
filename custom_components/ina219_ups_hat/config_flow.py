@@ -12,6 +12,7 @@ from .const import (
     CONF_BATTERIES_COUNT,
     CONF_BATTERY_CAPACITY,
     CONF_BUS,
+    CONF_INVERT_CURRENT,
     CONF_MAX_SOC,
     CONF_MIN_CHARGING_CURRENT,
     CONF_MIN_ONLINE_CURRENT,
@@ -45,6 +46,7 @@ STEP_USER_SCHEMA = vol.Schema({
     vol.Optional(CONF_MIN_CHARGING_CURRENT, default=55): int,
     vol.Optional(CONF_MAX_SOC, default=91): int,
     vol.Optional(CONF_SMA_SAMPLES, default=5): int,
+    vol.Optional(CONF_INVERT_CURRENT, default=False): bool,
 })
 
 
@@ -139,6 +141,7 @@ class INA219UpsHatOptionsFlow(config_entries.OptionsFlow):
             vol.Optional(CONF_MIN_CHARGING_CURRENT, default=merged.get(CONF_MIN_CHARGING_CURRENT, 55)): int,
             vol.Optional(CONF_MAX_SOC, default=merged.get(CONF_MAX_SOC, 91)): int,
             vol.Optional(CONF_SMA_SAMPLES, default=merged.get(CONF_SMA_SAMPLES, 5)): int,
+            vol.Optional(CONF_INVERT_CURRENT, default=merged.get(CONF_INVERT_CURRENT, False)): bool,
         })
 
         return self.async_show_form(step_id="init", data_schema=schema)

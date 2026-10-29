@@ -14,7 +14,8 @@
           "min_online_current": "Online threshold current (mA, negative = discharge)",
           "min_charging_current": "Charging threshold current (mA)",
           "max_soc": "Maximum SoC (%)",
-          "sma_samples": "SMA sample count"
+          "sma_samples": "SMA sample count",
+          "invert_current": "Invert current sign (enable if charging reads negative)"
         }
       }
     },
@@ -36,7 +37,8 @@
           "min_online_current": "Online threshold current (mA, negative = discharge)",
           "min_charging_current": "Charging threshold current (mA)",
           "max_soc": "Maximum SoC (%)",
-          "sma_samples": "SMA sample count"
+          "sma_samples": "SMA sample count",
+          "invert_current": "Invert current sign (enable if charging reads negative)"
         }
       }
     }
